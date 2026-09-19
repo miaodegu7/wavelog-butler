@@ -18,7 +18,7 @@
      <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="0.8*"/><ColumnDefinition Width="1*"/><ColumnDefinition Width="1.6*"/></Grid.ColumnDefinitions>
       <StackPanel Margin="0,0,20,0"><TextBlock Text="国家 / 地区" Style="{StaticResource Caption}"/><TextBox x:Name="Country" Text="等待查询" Style="{StaticResource Info}"/></StackPanel>
       <StackPanel Grid.Column="1" Margin="0,0,20,0"><TextBlock Text="电子邮箱" Style="{StaticResource Caption}"/><TextBox x:Name="Email" Text="等待查询" Style="{StaticResource Info}"/></StackPanel>
-      <StackPanel Grid.Column="2"><TextBlock Text="邮寄地址 · 寄出前请核对" Style="{StaticResource Caption}"/><TextBox x:Name="Address" Text="等待查询" Style="{StaticResource Info}"/></StackPanel>
+      <StackPanel Grid.Column="2"><TextBlock Text="完整邮寄地址 · 寄出前请核对" Style="{StaticResource Caption}"/><TextBox x:Name="Address" Text="等待查询" Style="{StaticResource Info}" AcceptsReturn="True" MinLines="3" MaxLines="2147483647" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"/></StackPanel>
      </Grid><TextBlock x:Name="Manager" Foreground="#315EEB" Margin="0,18,0,0" TextWrapping="Wrap"/><TextBlock x:Name="LookupStatus" Text="搜索会同时读取本地通联并联网查询资料。" Foreground="#71809B" Margin="0,10,0,0" TextWrapping="Wrap"/>
     </StackPanel></Border>
     <DockPanel Margin="0,2,0,16"><Button Content="导出寄卡清单" DockPanel.Dock="Right" Click="Export"/><TextBlock x:Name="Summary" Text="按我方呼号分组 · 没有通联的账户也会保留" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/></DockPanel>

@@ -1,11 +1,29 @@
 using System.Xml;
 using System.Xml.Linq;
+using System.Net;
+using System.Text.RegularExpressions;
 namespace WavelogButler;
 internal sealed record FriendInfo(string Country,string Email,string Address,string Manager,string Source);
 internal sealed class FriendLookup : IDisposable
 {
     private readonly HttpClient client = new(new HttpClientHandler { AllowAutoRedirect=false }) { Timeout=TimeSpan.FromSeconds(25) };
     private static string Value(XElement? element,string name) => element?.Elements().FirstOrDefault(child=>child.Name.LocalName==name)?.Value.Trim()??"";
+    internal static string PostalAddress(XElement callsign)
+    {
+        var addressFields=callsign.Elements()
+            .Where(element=>Regex.IsMatch(element.Name.LocalName,@"^addr[0-9]+$",RegexOptions.IgnoreCase))
+            .OrderBy(element=>int.TryParse(element.Name.LocalName[4..],out var number)?number:int.MaxValue)
+            .Select(element=>element.Value).Where(value=>!string.IsNullOrWhiteSpace(value)).ToList();
+        if(addressFields.Count==0) return "";
+        var parts=new List<string>{(Value(callsign,"fname")+" "+Value(callsign,"name")).Trim()};
+        parts.AddRange(addressFields);
+        parts.Add((Value(callsign,"state")+" "+Value(callsign,"zip")).Trim());
+        parts.Add(Value(callsign,"country"));
+        return string.Join(Environment.NewLine,parts.SelectMany(part=>
+            Regex.Replace(WebUtility.HtmlDecode(part),@"<br\s*/?>","\n",RegexOptions.IgnoreCase)
+                .Replace("\r\n","\n").Replace('\r','\n').Split('\n'))
+            .Select(line=>line.Trim()).Where(line=>line.Length>0));
+    }
     private async Task<XElement> Request(string query,CancellationToken token)
     {
         using var response=await client.GetAsync("https://xmldata.qrz.com/xml/current/?"+query,token);
@@ -25,8 +43,7 @@ internal sealed class FriendLookup : IDisposable
         var resultSession=result.Elements().FirstOrDefault(element=>element.Name.LocalName=="Session");
         if(Value(resultSession,"Error").Length>0 || callsign==null) throw new InvalidOperationException("QRZ 未返回资料：呼号不存在、登录过期或没有查询权限。请打开 QRZ 核对。");
         var country=Value(callsign,"country");
-        var address=string.Join(Environment.NewLine,new[]{Value(callsign,"fname")+" "+Value(callsign,"name"),Value(callsign,"addr1"),Value(callsign,"addr2"),Value(callsign,"state")+" "+Value(callsign,"zip"),country}.Select(value=>value.Trim()).Where(value=>value.Length>0));
-        if(Value(callsign,"addr1").Length==0 && Value(callsign,"addr2").Length==0) address="";
+        var address=PostalAddress(callsign);
         return new FriendInfo(country,Value(callsign,"email"),address,Value(callsign,"qslmgr"),"QRZ 官方 XML · "+DateTime.Now.ToString("yyyy-MM-dd HH:mm"));
     }
     public void Dispose()=>client.Dispose();

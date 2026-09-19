@@ -69,9 +69,16 @@ internal sealed class Database : IDisposable
     }
     public List<LogRow> Search(string call)
     {
+        var accounts=Accounts().ToDictionary(account=>account.Id);
         using var command = connection.CreateCommand(); command.CommandText = "SELECT account,data,missing FROM contacts WHERE call=$call"; command.Parameters.AddWithValue("$call",call);
         using var reader = command.ExecuteReader(); var rows = new List<LogRow>();
-        while(reader.Read()) rows.Add(new LogRow(Guid.Parse(reader.GetString(0)),JsonSerializer.Deserialize<Contact>(reader.GetString(1))!,reader.GetInt32(2)!=0));
+        while(reader.Read())
+        {
+            var accountId=Guid.Parse(reader.GetString(0));
+            var contact=JsonSerializer.Deserialize<Contact>(reader.GetString(1))!;
+            var station=accounts.GetValueOrDefault(accountId)?.Stations.FirstOrDefault(item=>item.Id==contact.StationId);
+            rows.Add(new LogRow(accountId,contact,reader.GetInt32(2)!=0,station?.Name is {Length:>0} name ? name : "台站 ID："+contact.StationId));
+        }
         return rows.OrderBy(row=>row.Contact.Get("QSO_DATE")).ThenBy(row=>row.Contact.Get("TIME_ON")).ToList();
     }
     public void Remove(Account account) => Execute("DELETE FROM accounts WHERE id=$id",("$id",account.Id.ToString()));
@@ -83,7 +90,7 @@ internal sealed class Database : IDisposable
     public void Backup(string path) { using var destination=new SqliteConnection(new SqliteConnectionStringBuilder{DataSource=path}.ToString()); destination.Open(); connection.BackupDatabase(destination); }
     public void Dispose()=>connection.Dispose();
 }
-internal sealed record LogRow(Guid AccountId,Contact Contact,bool Missing)
+internal sealed record LogRow(Guid AccountId,Contact Contact,bool Missing,string StationName = "")
 {
     public string OwnCall => Contact.Get("STATION_CALLSIGN");
     public string Date => DateTime.TryParseExact(Contact.Get("QSO_DATE"),"yyyyMMdd",System.Globalization.CultureInfo.InvariantCulture,System.Globalization.DateTimeStyles.None,out var date) ? date.ToString("yyyy-MM-dd") : Contact.Get("QSO_DATE");

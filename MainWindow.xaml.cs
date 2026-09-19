@@ -95,7 +95,7 @@ public partial class MainWindow : Window
             if(matches.Count>0)
             {
                 var grid=new DataGrid { ItemsSource=matches,AutoGenerateColumns=false,IsReadOnly=true,CanUserAddRows=false,CanUserDeleteRows=false,HeadersVisibility=DataGridHeadersVisibility.Column,GridLinesVisibility=DataGridGridLinesVisibility.Horizontal,HorizontalGridLinesBrush=new SolidColorBrush(Color.FromRgb(235,239,245)),RowHeight=42,ColumnHeaderHeight=38,BorderThickness=new Thickness(0),Background=Brushes.White,AlternatingRowBackground=new SolidColorBrush(Color.FromRgb(248,250,253)),MaxHeight=440,HorizontalScrollBarVisibility=ScrollBarVisibility.Auto };
-                foreach(var (title,path,width) in new (string,string,double)[]{("我方呼号","OwnCall",105),("日期 UTC","Date",100),("时间 UTC","Time",90),("频率 / 卫星","Channel",175),("模式","Mode",70),("发 / 收报告","Reports",110),("纸卡已寄","Qsl",85),("记录状态","State",160)})
+                foreach(var (title,path,width) in new (string,string,double)[]{("我方呼号","OwnCall",105),("台站","StationName",145),("日期 UTC","Date",100),("时间 UTC","Time",90),("频率 / 卫星","Channel",175),("模式","Mode",70),("发 / 收报告","Reports",110),("纸卡已寄","Qsl",85),("记录状态","State",160)})
                     grid.Columns.Add(new DataGridTextColumn{Header=title,Binding=new Binding(path),Width=new DataGridLength(width)});
                 panel.Children.Add(grid);
             }
@@ -213,8 +213,8 @@ public partial class MainWindow : Window
         if(dialog.ShowDialog(this)!=true)return;
         try
         {
-            var lines=new List<string>{"我方呼号,友台呼号,日期UTC,时间UTC,频率或卫星,模式,发收报告,纸卡已寄,记录状态,国家,邮箱,地址,资料来源"};
-            lines.AddRange(rows.Select(row=>string.Join(",",new[]{row.OwnCall,currentCall,row.Date,row.Time,row.Channel,row.Mode,row.Reports,row.Qsl,row.State,Country.Text,Email.Text,Address.Text,LookupStatus.Text}.Select(Csv))));
+            var lines=new List<string>{"我方呼号,台站,友台呼号,日期UTC,时间UTC,频率或卫星,模式,发收报告,纸卡已寄,记录状态,国家,邮箱,地址,资料来源"};
+            lines.AddRange(rows.Select(row=>string.Join(",",new[]{row.OwnCall,row.StationName,currentCall,row.Date,row.Time,row.Channel,row.Mode,row.Reports,row.Qsl,row.State,Country.Text,Email.Text,Address.Text,LookupStatus.Text}.Select(Csv))));
             File.WriteAllLines(dialog.FileName,lines,new UTF8Encoding(true));Status.Text="寄卡清单已导出；远端未返回的记录请核对后使用。";
         }
         catch(Exception){MessageBox.Show(this,"导出失败，请检查文件是否被占用。");}
