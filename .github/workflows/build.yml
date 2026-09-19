@@ -1,0 +1,32 @@
+name: Windows desktop build
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build
+        run: dotnet build WavelogButler.csproj -c Release
+      - name: Publish lightweight version
+        run: dotnet publish WavelogButler.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=None -o dist/lightweight
+      - name: Publish standalone version
+        run: dotnet publish WavelogButler.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o dist/standalone
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WavelogButler-win-x64-lightweight
+          path: dist/lightweight/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WavelogButler-win-x64-standalone
+          path: dist/standalone/
+          if-no-files-found: error
