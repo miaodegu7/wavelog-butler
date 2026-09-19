@@ -20,22 +20,6 @@ public sealed class Contact
     public Dictionary<string, string> Fields { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public string Get(string name) => Fields.GetValueOrDefault(name, "");
 }
-public sealed class Store
-{
-    public List<Account> Accounts { get; set; } = [];
-    public static string Folder => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WavelogButler");
-    private static string FilePath => Path.Combine(Folder, "accounts.json");
-    public static Store Load() => File.Exists(FilePath)
-        ? JsonSerializer.Deserialize<Store>(File.ReadAllText(FilePath)) ?? throw new InvalidDataException()
-        : new Store();
-    public void Save()
-    {
-        Directory.CreateDirectory(Folder);
-        var temporary = FilePath + ".tmp";
-        File.WriteAllText(temporary, JsonSerializer.Serialize(this));
-        File.Move(temporary, FilePath, true);
-    }
-}
 internal static class SecretStorage
 {
     [StructLayout(LayoutKind.Sequential)]
