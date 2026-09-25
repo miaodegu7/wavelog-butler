@@ -18,7 +18,8 @@ C# / .NET 8 WPF + SQLite。无 Python、Electron 或独立数据库服务器。
 仓库 → Actions → 最新成功的 Windows desktop build → Artifacts：
 
 - WavelogButler-win-x64-lightweight：需要 .NET 8 Desktop Runtime x64。
-- WavelogButler-win-x64-standalone：自带运行库，解压运行 WavelogButler.exe。
+- WavelogButler-windows-installer：Windows 安装程序，推荐普通用户使用。
+- WavelogButler-win-x64-standalone：自带运行库的便携版，解压运行 WavelogButler.exe。
 
 适用于 Windows 10/11 x64。软件未签名，Windows 可能显示 SmartScreen 提示，请核对下载来源。
 
@@ -34,7 +35,7 @@ C# / .NET 8 WPF + SQLite。无 Python、Electron 或独立数据库服务器。
 
 ## 数据与安全
 
-数据库：%LOCALAPPDATA%\WavelogButler\logs.db。
+数据库：%LOCALAPPDATA%\WavelogButler\logs.db。通联同步成功后写入 SQLite 存储，搜索从数据库读取，不依赖临时内存缓存；旧数据不会因为重新搜索或重启而被覆盖。同步时的单页数据会短暂驻留内存，写入后立即释放，这是网络分页解析所必需的。
 旧 JSON：同目录 accounts.json，仅用于首次迁移，迁移成功后不再用于查询。
 API 密钥和 QRZ 密码使用 Windows DPAPI 按当前用户加密；日志及地址字段未加密。
 备份文件同样包含私人日志，请妥善保存。凭据换电脑或 Windows 用户后通常需重新填写。

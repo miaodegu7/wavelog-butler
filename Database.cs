@@ -99,5 +99,11 @@ internal sealed record LogRow(Guid AccountId,Contact Contact,bool Missing,string
     public string Mode => Contact.Get("MODE");
     public string Reports => Contact.Get("RST_SENT")+" / "+Contact.Get("RST_RCVD");
     public string Qsl => Contact.Get("QSL_SENT");
-    public string State => Missing ? "远端未返回 · 待核对" : "已保存";
+    public string Lotw => Contact.Get("LOTW_QSL_RCVD").ToUpperInvariant() switch
+    {
+        "Y" => "已确认",
+        "R" => "已收到",
+        "N" => "未确认",
+        _ => Missing ? "待核对" : "未记录"
+    };
 }

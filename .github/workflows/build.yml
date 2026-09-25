@@ -20,6 +20,12 @@ jobs:
         run: dotnet publish WavelogButler.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o dist/lightweight
       - name: Publish standalone version
         run: dotnet publish WavelogButler.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -o dist/standalone
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --no-progress -y
+      - name: Build installer
+        shell: pwsh
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss'
       - uses: actions/upload-artifact@v4
         with:
           name: WavelogButler-win-x64-lightweight
@@ -29,4 +35,9 @@ jobs:
         with:
           name: WavelogButler-win-x64-standalone
           path: dist/standalone/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WavelogButler-windows-installer
+          path: dist/installer/*.exe
           if-no-files-found: error
